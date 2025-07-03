@@ -1,0 +1,18 @@
+meta {
+  name: register
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:5000/api/auth/signup
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  name: rash @contentType(text)
+  email: rashminattoji24@gmail.com @contentType(text)
+  password: rashmi @contentType(text)
+  profile: @file(C:\Users\MI\Pictures\image\images.jpeg) @contentType(image/jpeg)
+}

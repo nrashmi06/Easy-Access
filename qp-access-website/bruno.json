@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "qp access website",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
