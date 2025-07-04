@@ -6,4 +6,7 @@ module.exports = {
   updatePassword: (email, password) => User.findOneAndUpdate({ email }, { password }),
   setResetToken: (email, token, expiry) => User.findOneAndUpdate({ email }, { resetToken: token, resetTokenExpiry: expiry }),
   findByResetToken: (token) => User.findOne({ resetToken: token, resetTokenExpiry: { $gt: Date.now() } }),
+   findByVerificationToken: async (token) => {
+    return await User.findOne({ emailVerificationToken: token });
+  },
 };
