@@ -21,4 +21,7 @@ router.get('/verify-email/:token', AuthController.verifyEmail);
 // Refresh access token using refresh token
 router.post('/refresh-token', AuthController.refreshToken);
 
+// ✅ Add this: Resend verification email
+router.post('/resend-verification', AuthController.resendVerification);
+
 module.exports = router;

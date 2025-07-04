@@ -144,6 +144,37 @@ class AuthServiceImpl extends AuthService {
     user.resetTokenExpiry = null;
     await user.save();
   }
+
+static async resendVerification(email) {
+  const user = await UserRepository.findByEmail(email);
+  if (!user) throw new Error('Email not registered');
+  if (user.isActive) throw new Error('Email is already verified');
+
+  const emailToken = crypto.randomBytes(32).toString('hex');
+  const tokenExpiry = Date.now() + 3600000; // 1 hour
+
+  user.emailVerificationToken = emailToken;
+  user.emailVerificationTokenExpiry = tokenExpiry;
+  await user.save();
+
+  const verifyLink = `http://localhost:5000/api/auth/verify-email/${emailToken}`;
+
+  await transporter.sendMail({
+    to: email,
+    subject: 'Resend: Verify Your Email Address',
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee;">
+        <h2>Verify Your Email</h2>
+        <p>You requested a new verification link. Click below to verify your email address:</p>
+        <a href="${verifyLink}" style="padding: 10px 20px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
+        <p>If you didn't request this, you can ignore the email.</p>
+      </div>
+    `
+  });
+
+  return { message: 'Verification email resent successfully.' };
+}
+
 }
 
 module.exports = AuthServiceImpl;

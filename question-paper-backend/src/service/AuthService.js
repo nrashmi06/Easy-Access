@@ -1,3 +1,5 @@
+// src/service/AuthService.js
+
 class AuthService {
   static async signup(userData) {
     throw new Error('signup method not implemented');
@@ -21,6 +23,10 @@ class AuthService {
 
   static async refreshToken(refreshToken) {
     throw new Error('refreshToken method not implemented');
+  }
+
+  static async resendVerification(email) {
+    throw new Error('resendVerification method not implemented');
   }
 }
 

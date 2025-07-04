@@ -1,0 +1,18 @@
+meta {
+  name: resend-verification
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:5000/api/auth/resend-verification
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "user@example.com"
+  }
+  
+}

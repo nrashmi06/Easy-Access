@@ -104,7 +104,7 @@ module.exports = {
 
   refreshToken: async (req, res) => {
     try {
-      const { refreshToken } = req.cookies; // assuming cookie-based
+      const { refreshToken } = req.cookies;
       const tokens = await AuthService.refreshToken(refreshToken);
       res.json(successResponse({
         message: 'Token refreshed successfully',
@@ -119,5 +119,30 @@ module.exports = {
         status: 401
       }));
     }
+  },
+
+resendVerification: async (req, res) => {
+  try {
+    const { email } = req.body;
+    const result = await AuthService.resendVerification(email);
+
+    return res.status(200).json(
+      successResponse({
+        message: result.message,
+        path: req.originalUrl,
+        status: 200,
+      })
+    );
+  } catch (e) {
+    return res.status(400).json(
+      errorResponse({
+        message: 'Could not resend verification email',
+        error: e.message,
+        path: req.originalUrl,
+        status: 400,
+      })
+    );
   }
+}
+
 };
