@@ -4,7 +4,8 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  profileImage: { type: String, default: '' },
+  profileImage: { type: String, default: '' },               // URL from Cloudinary
+  profileCloudinaryId: { type: String, default: '' },        // <-- ✅ Add this line
   isActive: { type: Boolean, default: false },
   emailVerificationToken: { type: String },
   emailVerificationTokenExpiry: { type: Date },
@@ -15,7 +16,7 @@ const userSchema = new mongoose.Schema({
     enum: ['USER', 'ADMIN'],
     default: 'USER',
   },
-  refreshToken: { type: String }, // ✅ Add this
+  refreshToken: { type: String },
 }, {
   timestamps: true,
 });

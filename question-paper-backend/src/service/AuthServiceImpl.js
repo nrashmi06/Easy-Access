@@ -6,57 +6,79 @@ const UserRepository = require('../repository/UserRepository');
 const transporter = require('../config/mailer');
 const UserDTO = require('../dto/UserDTO');
 const AuthService = require('./AuthService');
+const cloudinary = require('../config/cloudinary');
 const { generateAccessToken, generateRefreshToken } = require('../utils/token');
 
 class AuthServiceImpl extends AuthService {
   static async signup({ name, email, password, file }) {
-    try {
-      const existing = await UserRepository.findByEmail(email);
-      if (existing) throw new Error('Email already registered');
+  try {
+    // Check if user already exists
+    const existing = await UserRepository.findByEmail(email);
+    if (existing) throw new Error('Email already registered');
 
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const emailToken = crypto.randomBytes(32).toString('hex');
-      const tokenExpiry = Date.now() + 3600000; // 1 hour
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      const user = await UserRepository.create({
-        name,
-        email,
-        password: hashedPassword,
-        profileImage: file?.path || '',
-        emailVerificationToken: emailToken,
-        emailVerificationTokenExpiry: tokenExpiry,
-        isActive: false,
+    // Email verification token setup
+    const emailToken = crypto.randomBytes(32).toString('hex');
+    const tokenExpiry = Date.now() + 3600000; // 1 hour
+
+    // Upload profile image to Cloudinary
+    let profileImageUrl = '';
+    let cloudinaryId = '';
+
+    if (file) {
+      const uploaded = await cloudinary.uploader.upload(file.path, {
+        folder: 'profiles',
       });
-
-      const verifyLink = `http://localhost:5000/api/auth/verify-email/${emailToken}`;
-
-      await transporter.sendMail({
-  to: email,
-  subject: 'Verify Your Email Address',
-  html: `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px; background-color: #f9f9f9;">
-      <h2 style="color: #333;">Welcome to Easy Access!</h2>
-      <p>Thank you for signing up. Please confirm your email address by clicking the button below:</p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${verifyLink}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-          Verify Email
-        </a>
-      </div>
-      <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-      <p style="word-break: break-all;"><a href="${verifyLink}">${verifyLink}</a></p>
-      <hr style="margin-top: 30px;">
-      <p style="font-size: 12px; color: #888;">If you did not create an account, please ignore this email.</p>
-    </div>
-  `
-});
-
-
-      return { message: 'Verification email sent. Please verify to activate your account.' };
-    } catch (err) {
-      console.error('Signup error:', err.message);
-      throw new Error(err.message || 'Signup failed');
+      profileImageUrl = uploaded.secure_url;
+      cloudinaryId = uploaded.public_id;
     }
+
+    // Create the user in DB
+    const user = await UserRepository.create({
+      name,
+      email,
+      password: hashedPassword,
+      profileImage: profileImageUrl,
+      profileCloudinaryId: cloudinaryId,
+      emailVerificationToken: emailToken,
+      emailVerificationTokenExpiry: tokenExpiry,
+      isActive: false,
+    });
+
+    // Generate verification link
+    const verifyLink = `http://localhost:5000/api/auth/verify-email/${emailToken}`;
+
+    // Send verification email
+    await transporter.sendMail({
+      to: email,
+      subject: 'Verify Your Email Address',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 8px; background-color: #f9f9f9;">
+          <h2 style="color: #333;">Welcome to Easy Access!</h2>
+          <p>Thank you for signing up. Please confirm your email address by clicking the button below:</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${verifyLink}" style="background-color: #4CAF50; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+              Verify Email
+            </a>
+          </div>
+          <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+          <p style="word-break: break-all;"><a href="${verifyLink}">${verifyLink}</a></p>
+          <hr style="margin-top: 30px;">
+          <p style="font-size: 12px; color: #888;">If you did not create an account, please ignore this email.</p>
+        </div>
+      `,
+    });
+
+    return {
+      message: 'Verification email sent. Please verify to activate your account.',
+    };
+  } catch (err) {
+    console.error('Signup error:', err.message);
+    throw new Error(err.message || 'Signup failed');
   }
+}
 
   static async verifyEmail(token) {
     const user = await UserRepository.findByVerificationToken(token);

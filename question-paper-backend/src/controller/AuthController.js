@@ -3,34 +3,39 @@ const { successResponse, errorResponse } = require('../utils/apiResponse');
 
 module.exports = {
   signup: async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json(errorResponse({
-          message: 'No file uploaded',
-          path: req.originalUrl,
-          status: 400
-        }));
-      }
-
-      const user = await AuthService.signup({
-        ...req.body,
-        file: req.file,
-      });
-
-      res.status(201).json(successResponse({
-        message: 'Signup successful. Please verify your email to activate your account.',
-        data: user,
+  try {
+    // Ensure file is uploaded
+    if (!req.file) {
+      return res.status(400).json(errorResponse({
+        message: 'No profile image uploaded',
         path: req.originalUrl,
-        status: 201,
-      }));
-    } catch (e) {
-      res.status(500).json(errorResponse({
-        message: 'Signup failed',
-        error: e.message,
-        path: req.originalUrl
+        status: 400
       }));
     }
-  },
+
+    // Call AuthService.signup with form data + file
+    const user = await AuthService.signup({
+      ...req.body,
+      file: req.file, // Multer-parsed file object
+    });
+
+    return res.status(201).json(successResponse({
+      message: 'Signup successful. Please verify your email to activate your account.',
+      data: user,
+      path: req.originalUrl,
+      status: 201,
+    }));
+  } catch (e) {
+    console.error('Signup error:', e.message); // Optional: log error for dev
+    return res.status(500).json(errorResponse({
+      message: 'Signup failed',
+      error: e.message,
+      path: req.originalUrl,
+      status: 500
+    }));
+  }
+},
+
 
   login: async (req, res) => {
     try {
