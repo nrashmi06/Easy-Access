@@ -1,0 +1,23 @@
+meta {
+  name: ask question
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:5000/api/llm/ask
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accesstoken}}
+}
+
+body:json {
+  {
+    "userId": "6867e493b7c5f1841df8705f",
+    "question": "What is artificial intelligence?"
+  }
+  
+}

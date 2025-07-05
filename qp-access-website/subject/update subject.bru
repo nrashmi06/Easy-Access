@@ -1,0 +1,21 @@
+meta {
+  name: update subject
+  type: http
+  seq: 3
+}
+
+put {
+  url: http://localhost:5000/api/subjects/6867ccbb279c145cc6c05754
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accesstoken}}
+}
+
+body:json {
+  {
+    "name": "Civil Engineering"
+  }
+}

@@ -1,0 +1,23 @@
+meta {
+  name: add qn paper - admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:5000/api/qps
+  body: multipartForm
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accesstoken}}
+}
+
+body:multipart-form {
+  title: Civil paper 2
+  year: 2016
+  subjectName: Civil
+  pdf: @file(C:\Users\MI\Downloads\CIVIL MSE 2015.pdf)
+  type: MSE
+}

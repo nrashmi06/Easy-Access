@@ -5,7 +5,20 @@ meta {
 }
 
 post {
-  url: POST http://localhost:5000/api/auth/login
-  body: none
-  auth: inherit
+  url: http://localhost:5000/api/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Accept: application/json
+}
+
+body:json {
+  {
+    "email": "rashminattoji24@gmail.com",
+    "password": "rashmi"
+  }
+  
 }

@@ -1,0 +1,15 @@
+meta {
+  name: delete qp
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:5000/api/qps/686848ee6c1e112eb49969d8
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accesstoken}}
+}

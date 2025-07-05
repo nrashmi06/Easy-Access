@@ -1,0 +1,15 @@
+meta {
+  name: delete subject
+  type: http
+  seq: 4
+}
+
+delete {
+  url: http://localhost:5000/api/subjects/68684857232a1b61f3361a4f
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accesstoken}}
+}

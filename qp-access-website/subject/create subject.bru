@@ -1,11 +1,11 @@
 meta {
-  name: forgot-password
+  name: create subject
   type: http
-  seq: 3
+  seq: 2
 }
 
 post {
-  url: http://localhost:5000/api/auth/forgot-password
+  url: http://localhost:5000/api/subjects
   body: json
   auth: bearer
 }
@@ -16,7 +16,7 @@ auth:bearer {
 
 body:json {
   {
-    "email": "rashminattoji24@gmail.com"
+    "name": "civil"
   }
   
 }
