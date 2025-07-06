@@ -9,4 +9,7 @@ export const AUTH_PATHS = {
   LOGIN: `${BASE_URL}/api/auth/login`,
   FORGOT_PASSWORD: `${BASE_URL}/api/auth/forgot-password`,
   RESET_PASSWORD: `${BASE_URL}/api/auth/reset-password`,
+  REFRESH_TOKEN: `${BASE_URL}/api/auth/refresh-token`,
+  RESEND_VERIFICATION: `${BASE_URL}/api/auth/resend-verification`,
+  LOGOUT: `${BASE_URL}/api/auth/logout`,
 };

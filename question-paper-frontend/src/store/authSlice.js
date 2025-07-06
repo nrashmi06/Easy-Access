@@ -5,6 +5,8 @@ const initialState = {
   email: "",
   username: "",
   profileImage: "",
+  userId: "",
+  role: "", 
 };
 
 const authSlice = createSlice({
@@ -16,12 +18,16 @@ const authSlice = createSlice({
       state.email = action.payload.user.email;
       state.username = action.payload.user.name;
       state.profileImage = action.payload.user.profileImage;
+      state.userId = action.payload.user.userId;
+      state.role = action.payload.user.role; 
     },
     clearUser: (state) => {
       state.accessToken = "";
       state.email = "";
       state.username = "";
       state.profileImage = "";
+      state.userId = "";
+      state.role = "";
     },
   },
 });

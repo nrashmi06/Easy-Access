@@ -7,7 +7,7 @@ import { SUBJECT_PATHS } from "../../mapper/subject.paths";
  */
 
 export const updateSubject = async (data , accessToken) => {
-  const path = SUBJECT_PATHS.UPDATE;
+  const path = SUBJECT_PATHS.UPDATE(data._id);
 
   try {
     const response = await fetch(path, {
@@ -15,7 +15,6 @@ export const updateSubject = async (data , accessToken) => {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-        Accept: "application/json",
       },
       body: JSON.stringify(data),
     });

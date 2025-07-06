@@ -1,9 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSubject } from "../contexts/SubjectContext";
 import SidebarLayout from "../components/SidebarLayout";
-import PdfCard from "../components/PdfCard"; // Make sure you’ve created this component
+import PdfCard from "../components/PdfCard";
+import { getQpBySubjectController } from "../controllers/qp/getQpBySubjectController";
+import { useSelector } from "react-redux";
+import ChatBot from "../components/ChatBot";
 
-export default function Dashboard() {
+export default function Dashboard({ setSelectedSubject }) {
   const [activeTab, setActiveTab] = useState("mse");
+  const accessToken = useSelector((state) => state.auth.accessToken);
+  const [pdfs, setPdfs] = useState({ mse: [], see: [], mcq: [] });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const selectedSubject = useSubject();
 
   const tabs = [
     { key: "mse", label: "MSE" },
@@ -11,43 +20,60 @@ export default function Dashboard() {
     { key: "mcq", label: "MCQ" },
   ];
 
-  const samplePdfs = {
-    mse: [
-      { title: "Mathematics - MSE I", year: "2023", pdfUrl: "/pdfs/math-mse-1-2023.pdf" },
-      { title: "Physics - MSE I", year: "2022", pdfUrl: "/pdfs/physics-mse-1-2022.pdf" },
-      { title: "Mathematics - MSE I", year: "2023", pdfUrl: "/pdfs/math-mse-1-2023.pdf" },
-      { title: "Physics - MSE I", year: "2022", pdfUrl: "/pdfs/physics-mse-1-2022.pdf" },
-      { title: "Mathematics - MSE I", year: "2023", pdfUrl: "/pdfs/math-mse-1-2023.pdf" },
-      { title: "Physics - MSE I", year: "2022", pdfUrl: "/pdfs/physics-mse-1-2022.pdf" },
-    ],
-    see: [
-      { title: "Computer Science - SEE", year: "2023", pdfUrl: "/pdfs/cs-see-2023.pdf" },
-      { title: "Chemistry - SEE", year: "2022", pdfUrl: "/pdfs/chem-see-2022.pdf" },
-      { title: "Computer Science - SEE", year: "2023", pdfUrl: "/pdfs/cs-see-2023.pdf" },
-      { title: "Chemistry - SEE", year: "2022", pdfUrl: "/pdfs/chem-see-2022.pdf" },
-      { title: "Computer Science - SEE", year: "2023", pdfUrl: "/pdfs/cs-see-2023.pdf" },
-      { title: "Chemistry - SEE", year: "2022", pdfUrl: "/pdfs/chem-see-2022.pdf" },
-    ],
-    mcq: [
-      { title: "Biology - MCQ Set 1", year: "2023", pdfUrl: "/pdfs/bio-mcq-2023.pdf" },
-      { title: "History - MCQ Set A", year: "2022", pdfUrl: "/pdfs/history-mcq-a-2022.pdf" },
-      { title: "Biology - MCQ Set 1", year: "2023", pdfUrl: "/pdfs/bio-mcq-2023.pdf" },
-      { title: "History - MCQ Set A", year: "2022", pdfUrl: "/pdfs/history-mcq-a-2022.pdf" },
-      { title: "Biology - MCQ Set 1", year: "2023", pdfUrl: "/pdfs/bio-mcq-2023.pdf" },
-      { title: "History - MCQ Set A", year: "2022", pdfUrl: "/pdfs/history-mcq-a-2022.pdf" },
-    ],
-  };
+  useEffect(() => {
+    console.log("Selected Subject:", selectedSubject);
+    if (!selectedSubject?.subjectId) return;
+
+    const fetchPdfs = async () => {
+      setLoading(true);
+      setError("");
+
+      try {
+        const data = { subjectId: selectedSubject.subjectId };
+        const response = await getQpBySubjectController(data, accessToken);
+
+        if (Array.isArray(response.data)) {
+          // Group PDFs by type
+          const grouped = { mse: [], see: [], mcq: [] };
+
+          response.data.forEach((pdf) => {
+            const typeKey = pdf.type?.toLowerCase(); // e.g., "mse", "see", "mcq"
+            if (grouped[typeKey]) {
+              grouped[typeKey].push(pdf);
+            }
+          });
+
+          setPdfs(grouped);
+        } else {
+          throw new Error("Unexpected response format");
+        }
+      } catch (err) {
+        console.error("Failed to fetch PDFs:", err);
+        setError("Failed to load question papers.");
+        setPdfs({ mse: [], see: [], mcq: [] });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPdfs();
+  }, [selectedSubject]);
 
   return (
-    <SidebarLayout>
+  <SidebarLayout setSelectedSubject={setSelectedSubject}>
+    <>
       {/* Tabs */}
       <div className="flex justify-center mb-6">
-        <div className="tabs tabs-boxed">
+        <div className="tabs tabs-boxed bg-base-200 p-1 rounded-xl shadow-md">
           {tabs.map((tab) => (
             <a
               key={tab.key}
-              className={`tab ${activeTab === tab.key ? "tab-active" : ""}`}
               onClick={() => setActiveTab(tab.key)}
+              className={`tab tab-bordered font-semibold px-5 py-2 rounded-lg
+                ${activeTab === tab.key
+                  ? "tab-active bg-primary text-white shadow-inner"
+                  : "hover:bg-primary/10 hover:text-primary text-base-content"
+                }`}
             >
               {tab.label}
             </a>
@@ -55,17 +81,41 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Tab Content */}
+      {/* Subject Info */}
+      {selectedSubject && (
+        <div className="mb-4 text-center text-sm text-gray-500">
+          Showing PDFs for: <strong>{selectedSubject.name}</strong>
+        </div>
+      )}
+
+      {/* Error */}
+      {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+
+      {/* PDFs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-4">
-        {samplePdfs[activeTab].map((pdf) => (
-          <PdfCard
-            key={pdf.pdfUrl}
-            title={pdf.title}
-            year={pdf.year}
-            pdfUrl={pdf.pdfUrl}
-          />
-        ))}
+        {loading ? (
+          <p className="text-center col-span-full">Loading...</p>
+        ) : pdfs[activeTab]?.length > 0 ? (
+          pdfs[activeTab].map((pdf) => (
+            <PdfCard
+              key={pdf.pdfUrl}
+              title={pdf.title}
+              year={pdf.year}
+              pdfUrl={pdf.pdfUrl}
+              type={pdf.type}
+              subjectName={pdf.subject.name}
+            />
+          ))
+        ) : (
+          <p className="text-center col-span-full text-gray-500">
+            No PDFs found for {activeTab.toUpperCase()}
+          </p>
+        )}
       </div>
-    </SidebarLayout>
-  );
-}
+
+      {/* 🔽 Floating ChatBot */}
+      <ChatBot />
+    </>
+  </SidebarLayout>
+);
+};

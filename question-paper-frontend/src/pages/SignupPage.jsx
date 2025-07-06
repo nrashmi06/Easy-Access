@@ -1,11 +1,12 @@
 // @ts-check
 /** @typedef {import("../types/auth").SignupFormData} SignupFormData */
 
-
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { handleSignup } from "../controllers/auth/registerController.js";
+import { resendVerificationController } from "../controllers/auth/resendVerificationController.js";
+
 
 export default function SignupPage() {
   /** @type {[SignupFormData, Function]} */
@@ -15,6 +16,8 @@ export default function SignupPage() {
     password: "",
     profile: null,
   });
+
+  const [signupComplete, setSignupComplete] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -27,28 +30,43 @@ export default function SignupPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // For now, just log the form data
     const formData = new FormData();
     formData.append("name", form.name);
     formData.append("email", form.email);
     formData.append("password", form.password);
     if (form.profile) formData.append("profile", form.profile);
 
-    console.log("profile file:", form.profile);
-
-    console.log("FormData to send:", Object.fromEntries(formData.entries()));
     handleSignup(formData)
-      .then((res) => {  
+      .then((res) => {
         if (res.success) {
           alert(res.message);
           console.log("✅ Signup successful:", res.data);
-          // Optionally: window.location.href = "/login";
+          setSignupComplete(true);
         } else {
           alert(`❌ ${res.message}`);
           console.error("Signup error:", res.error);
         }
       })
-    // You'd replace the above with a fetch() or axios() call to your API
+      .catch((err) => {
+        alert("❌ An unexpected error occurred.");
+        console.error("Unexpected signup error:", err);
+      });
+  };
+
+  const handleResendVerification = () => {
+    console.log("🔁 Resent verification email");
+    alert("Verification email resent!");
+    
+    let response = resendVerificationController({ email: form.email });
+    response.then((res) => {
+      if (res.success) {
+        alert(res.message);
+        console.log("✅ Resend verification successful:", res.data);
+      } else {
+        alert(`❌ ${res.message}`);
+        console.error("Resend verification error:", res.error);
+      }
+    });
   };
 
   return (
@@ -74,79 +92,93 @@ export default function SignupPage() {
                 </p>
               </div>
 
-              <form className="space-y-6" onSubmit={handleSubmit}>
-                {/* Name */}
-                <div className="form-control">
-                  <label className="label pb-2">
-                    <span className="label-text text-base-content font-medium">Full Name</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Your name"
-                    value={form.name}
-                    onChange={handleChange}
-                    required
-                    className="input input-bordered w-full py-3 text-base"
-                  />
-                </div>
+              {!signupComplete ? (
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                  {/* Name */}
+                  <div className="form-control">
+                    <label className="label pb-2">
+                      <span className="label-text text-base-content font-medium">Full Name</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Your name"
+                      value={form.name}
+                      onChange={handleChange}
+                      required
+                      className="input input-bordered w-full py-3 text-base"
+                    />
+                  </div>
 
-                {/* Email */}
-                <div className="form-control">
-                  <label className="label pb-2">
-                    <span className="label-text text-base-content font-medium">Email</span>
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="you@example.com"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
-                    className="input input-bordered w-full py-3 text-base"
-                  />
-                </div>
+                  {/* Email */}
+                  <div className="form-control">
+                    <label className="label pb-2">
+                      <span className="label-text text-base-content font-medium">Email</span>
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="you@example.com"
+                      value={form.email}
+                      onChange={handleChange}
+                      required
+                      className="input input-bordered w-full py-3 text-base"
+                    />
+                  </div>
 
-                {/* Password */}
-                <div className="form-control">
-                  <label className="label pb-2">
-                    <span className="label-text text-base-content font-medium">Password</span>
-                  </label>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="••••••••"
-                    value={form.password}
-                    onChange={handleChange}
-                    required
-                    className="input input-bordered w-full py-3 text-base"
-                  />
-                </div>
+                  {/* Password */}
+                  <div className="form-control">
+                    <label className="label pb-2">
+                      <span className="label-text text-base-content font-medium">Password</span>
+                    </label>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="••••••••"
+                      value={form.password}
+                      onChange={handleChange}
+                      required
+                      className="input input-bordered w-full py-3 text-base"
+                    />
+                  </div>
 
-                {/* Profile Picture */}
-                <div className="form-control">
-                  <label className="label pb-2">
-                    <span className="label-text text-base-content font-medium">Profile Picture</span>
-                  </label>
-                  <input
-                    type="file"
-                    name="profile"
-                    accept="image/*"
-                    onChange={handleChange}
-                    className="file-input file-input-bordered w-full"
-                  />
-                </div>
+                  {/* Profile Picture */}
+                  <div className="form-control">
+                    <label className="label pb-2">
+                      <span className="label-text text-base-content font-medium">Profile Picture</span>
+                    </label>
+                    <input
+                      type="file"
+                      name="profile"
+                      accept="image/*"
+                      onChange={handleChange}
+                      className="file-input file-input-bordered w-full"
+                    />
+                  </div>
 
-                {/* Submit */}
-                <div className="form-control pt-4">
+                  {/* Submit */}
+                  <div className="form-control pt-4">
+                    <button
+                      type="submit"
+                      className="btn btn-primary w-full py-3 text-base font-semibold hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="text-center space-y-6">
+                  <p className="text-base-content/80">
+                    ✅ Signup successful! Please verify your email.
+                  </p>
                   <button
-                    type="submit"
-                    className="btn btn-primary w-full py-3 text-base font-semibold hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="btn btn-secondary w-full py-3 text-base font-semibold hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
+                    onClick={handleResendVerification}
                   >
-                    Sign Up
+                    Resend Verification Email
                   </button>
                 </div>
-              </form>
+              )}
 
               {/* Sign-in link */}
               <div className="text-center pt-6 border-t border-base-300/50">

@@ -8,7 +8,7 @@ import { QP_PATHS } from "../../mapper/qp.paths";
  */
 export const deleteQp = async (data, accessToken) => {
   try {
-    const response = await fetch(QP_PATHS.DELETE(data.id), {
+    const response = await fetch(QP_PATHS.DELETE(data._id), {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${accessToken}`,

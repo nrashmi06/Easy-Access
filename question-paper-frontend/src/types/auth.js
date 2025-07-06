@@ -24,6 +24,12 @@
  */
 
 /**
+ * @typedef {Object} ResendVerificationData
+ * @property {string} email
+ */
+
+
+/**
  * @typedef {Object} APIResponse
  * @property {boolean} success
  * @property {string|null} error
