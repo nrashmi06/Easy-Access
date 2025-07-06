@@ -10,32 +10,44 @@ const cloudinary = require('../config/cloudinary');
 const { generateAccessToken, generateRefreshToken } = require('../utils/token');
 
 class AuthServiceImpl extends AuthService {
-  static async signup({ name, email, password, file }) {
+ static async signup({ name, email, password, file }) {
   try {
-    // Check if user already exists
     const existing = await UserRepository.findByEmail(email);
     if (existing) throw new Error('Email already registered');
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Email verification token setup
     const emailToken = crypto.randomBytes(32).toString('hex');
     const tokenExpiry = Date.now() + 3600000; // 1 hour
 
-    // Upload profile image to Cloudinary
+    // Upload profile image to Cloudinary from buffer
     let profileImageUrl = '';
     let cloudinaryId = '';
 
     if (file) {
-      const uploaded = await cloudinary.uploader.upload(file.path, {
-        folder: 'profiles',
-      });
+      const streamifier = require('streamifier');
+
+const streamUpload = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: 'profiles' },
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
+
+const uploaded = await streamUpload(file.buffer);
+
       profileImageUrl = uploaded.secure_url;
       cloudinaryId = uploaded.public_id;
     }
 
-    // Create the user in DB
     const user = await UserRepository.create({
       name,
       email,
@@ -47,10 +59,8 @@ class AuthServiceImpl extends AuthService {
       isActive: false,
     });
 
-    // Generate verification link
     const verifyLink = `http://localhost:5000/api/auth/verify-email/${emailToken}`;
 
-    // Send verification email
     await transporter.sendMail({
       to: email,
       subject: 'Verify Your Email Address',
@@ -120,6 +130,7 @@ class AuthServiceImpl extends AuthService {
   static async refreshToken(oldToken) {
     try {
       const decoded = jwt.verify(oldToken, process.env.REFRESH_TOKEN_SECRET);
+      console.log('Decoded refresh token:', decoded);
       const user = await UserRepository.findById(decoded.id);
       if (!user || user.refreshToken !== oldToken) {
         throw new Error('Invalid refresh token');
@@ -139,24 +150,25 @@ class AuthServiceImpl extends AuthService {
     }
   }
 
-  static async forgotPassword(email) {
-    const user = await UserRepository.findByEmail(email);
-    if (!user) throw new Error('Email not registered');
+static async forgotPassword(email) {
+  console.log('forgotPassword called with email:', email);
 
-    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const link = `http://localhost:3000/reset-password/${token}`;
+  const user = await UserRepository.findByEmail(email);
+  if (!user) throw new Error('Email not registered');
 
-    await UserRepository.setResetToken(email, token, Date.now() + 3600000);
+  // Generate a random uppercase token (6 characters)
+  const token = crypto.randomBytes(3).toString('hex').toUpperCase();
 
-    await transporter.sendMail({
-      to: email,
-      subject: 'Password Reset',
-      html: `<p>Click to reset password: <a href="${link}">${link}</a></p>`
-    });
-  }
+  await UserRepository.setResetToken(email, token, Date.now() + 3600000);
+
+  await transporter.sendMail({
+    to: email,
+    subject: 'Password Reset',
+    html: `<p>Token to reset password: ${token}</p>`
+  });
+}
 
   static async resetPassword(token, newPassword) {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await UserRepository.findByResetToken(token);
     if (!user) throw new Error('Token expired or invalid');
 
@@ -196,6 +208,25 @@ static async resendVerification(email) {
 
   return { message: 'Verification email resent successfully.' };
 }
+
+static async logout(authToken) {
+  try {
+    const decoded = jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET);
+    
+
+    const user = await UserRepository.findById(decoded.id);
+    if (!user) throw new Error('User not found during logout');
+
+    user.refreshToken = null;
+    await user.save();
+
+    return { message: 'Logout successful' };
+  } catch (err) {
+    console.error("Logout error:", err);  // Add this!
+    throw new Error(err.message || 'Logout error');
+  }
+}
+
 
 }
 

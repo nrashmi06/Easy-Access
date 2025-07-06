@@ -2,6 +2,7 @@
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cloudinary": "^1.41.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
@@ -11,12 +12,14 @@
     "multer-storage-cloudinary": "^4.0.0",
     "node-cron": "^4.2.0",
     "node-fetch": "^2.7.0",
-    "nodemailer": "^7.0.4"
+    "nodemailer": "^7.0.4",
+    "streamifier": "^0.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
   },
   "scripts": {
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
   }
 }

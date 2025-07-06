@@ -23,10 +23,29 @@ class QPServiceImpl extends QPService {
     throw new Error('Subject not found');
   }
 
-  const uploaded = await cloudinary.uploader.upload(file.path, {
-    resource_type: 'raw',
-    folder: 'qps',
+  const streamifier = require('streamifier');
+
+const streamUpload = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'raw',
+        folder: 'qps',
+      },
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
   });
+};
+
+const uploaded = await streamUpload(file.buffer);
+
 
   const qp = await QPRepository.create({
     title,
@@ -65,10 +84,29 @@ class QPServiceImpl extends QPService {
     await cloudinary.uploader.destroy(existingQP.cloudinaryId, { resource_type: 'raw' });
 
     // Upload the new file
-    const uploaded = await cloudinary.uploader.upload(file.path, {
-      resource_type: 'raw',
-      folder: 'qps',
-    });
+    const streamifier = require('streamifier');
+
+const streamUpload = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'raw',
+        folder: 'qps',
+      },
+      (error, result) => {
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
+
+const uploaded = await streamUpload(file.buffer);
+
 
     updateFields.pdfUrl = uploaded.secure_url;
     updateFields.cloudinaryId = uploaded.public_id;
