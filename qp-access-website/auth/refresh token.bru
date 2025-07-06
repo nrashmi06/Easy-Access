@@ -1,0 +1,15 @@
+meta {
+  name: refresh token
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:5000/api/auth/refresh-token
+  body: none
+  auth: inherit
+}
+
+headers {
+  refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+}
