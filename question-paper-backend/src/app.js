@@ -6,14 +6,15 @@ const cookieParser = require('cookie-parser');
 require('./cron/cleanupJob');
 
 const app = express();
+app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
   origin: "http://localhost:5173", // your frontend origin
   credentials: true                // allow cookies
 }));
 
 
-app.use(express.json());
-app.use(cookieParser());
+
 
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,

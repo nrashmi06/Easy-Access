@@ -128,27 +128,50 @@ const uploaded = await streamUpload(file.buffer);
   }
 
   static async refreshToken(oldToken) {
-    try {
-      const decoded = jwt.verify(oldToken, process.env.REFRESH_TOKEN_SECRET);
-      console.log('Decoded refresh token:', decoded);
-      const user = await UserRepository.findById(decoded.id);
-      if (!user || user.refreshToken !== oldToken) {
-        throw new Error('Invalid refresh token');
-      }
-
-      const newAccessToken = generateAccessToken(user);
-      const newRefreshToken = generateRefreshToken(user);
-      user.refreshToken = newRefreshToken;
-      await user.save();
-
-      return {
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken,
-      };
-    } catch (err) {
-      throw new Error('Refresh token expired or invalid');
+  try {
+    if (!oldToken) {
+      console.error('[refreshToken] Error: No refresh token provided');
+      throw new Error('No refresh token provided');
     }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(oldToken, process.env.REFRESH_TOKEN_SECRET);
+      console.log('[refreshToken] Decoded token:', decoded);
+    } catch (verifyErr) {
+      console.error('[refreshToken] Token verification failed:', verifyErr.message);
+      throw new Error('Invalid or expired refresh token');
+    }
+
+    const user = await UserRepository.findById(decoded.id);
+    if (!user) {
+      console.error('[refreshToken] Error: User not found for ID:', decoded.id);
+      throw new Error('User not found');
+    }
+
+    if (user.refreshToken !== oldToken) {
+      console.error('[refreshToken] Error: Token mismatch. Stored:', user.refreshToken, '| Provided:', oldToken);
+      throw new Error('Refresh token does not match stored token');
+    }
+
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    console.log('[refreshToken] Access and refresh tokens regenerated');
+    console.log('[refreshToken] Stored new refresh token:', newRefreshToken);
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+  } catch (err) {
+    console.error('[refreshToken] Failed:', err.message);
+    throw new Error('Refresh token failed: ' + err.message);
   }
+}
+
 
 static async forgotPassword(email) {
   console.log('forgotPassword called with email:', email);
@@ -212,6 +235,8 @@ static async resendVerification(email) {
 static async logout(authToken) {
   try {
     const decoded = jwt.verify(authToken, process.env.ACCESS_TOKEN_SECRET);
+    console.log("[Logout] Token received:", authToken);
+
     
 
     const user = await UserRepository.findById(decoded.id);

@@ -45,9 +45,11 @@ signup: async (req, res) => {
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Strict',
+        sameSite: 'Lax',
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
+      console.log('Setting refreshToken cookie:', refreshToken);
+
 
       res.json(successResponse({
         message: 'Login successful',
@@ -109,30 +111,41 @@ signup: async (req, res) => {
   },
 
   refreshToken: async (req, res) => {
-    try {
-      const { refreshToken } = req.cookies;
-      const tokens = await AuthService.refreshToken(refreshToken);
+  try {
+    console.log("the value of req.cookies:", req.cookies);
+    const refreshToken = req.cookies.refreshToken;
 
-       res.cookie('refreshToken', tokens.refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      return res.json(successResponse({
+    console.log('[RefreshToken] Received refresh token:', refreshToken ? 'Present' : 'Missing');
+
+    const tokens = await AuthService.refreshToken(refreshToken);
+
+    console.log('[RefreshToken] New access token generated:', tokens.accessToken);
+    console.log('[RefreshToken] New refresh token set in cookie');
+
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.json(successResponse({
       message: 'Token refreshed successfully',
       data: { accessToken: tokens.accessToken },
       path: req.originalUrl,
     }));
-    } catch (e) {
-      res.status(401).json(errorResponse({
-        message: 'Refresh token failed',
-        error: e.message,
-        path: req.originalUrl,
-        status: 401
-      }));
-    }
-  },
+
+  } catch (e) {
+    console.error('[RefreshToken] Error:', e.message);
+
+    res.status(401).json(errorResponse({
+      message: 'Refresh token failed',
+      error: e.message,
+      path: req.originalUrl,
+      status: 401
+    }));
+  }
+},
 
 resendVerification: async (req, res) => {
   try {
