@@ -5,6 +5,7 @@ import EditPdfModal from "./EditPdfModal";
 import ConfirmDeleteModal from "./ConfirmDeleteModal";
 
 export default function PdfCard({
+  _id,
   title,
   year,
   pdfUrl,
@@ -14,7 +15,8 @@ export default function PdfCard({
   const role = useSelector((state) => state.auth.role);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-
+  console.log("the value of id is", _id);
+  console.log("the value of title is", title);
   const handleDownload = async () => {
     try {
       const response = await fetch(pdfUrl, { mode: "cors" });
@@ -32,13 +34,6 @@ export default function PdfCard({
       console.error("Failed to download PDF:", error);
       alert("Failed to download PDF. Please try again later.");
     }
-  };
-
-  const handleEditSubmit = (updatedData) => {
-    // Logic to handle the edit submission
-    // This could involve making an API call to update the PDF details
-    console.log("Updated Data:", updatedData);
-    setShowEdit(false);
   };
 
   return (
@@ -110,11 +105,11 @@ export default function PdfCard({
         </div>
       </div>
 
+      {/* ✅ Ensures _id is included in form data */}
       <EditPdfModal
         isOpen={showEdit}
         onClose={() => setShowEdit(false)}
-        onSubmit={handleEditSubmit}
-        initialData={{ title, year, pdfUrl, type, subjectName }}
+        initialData={{_id, title, year, pdfUrl, type, subjectName }}
       />
 
       <ConfirmDeleteModal
@@ -123,6 +118,7 @@ export default function PdfCard({
         onConfirm={() => {
           setShowDelete(false);
         }}
+        id={_id}
       />
     </div>
   );

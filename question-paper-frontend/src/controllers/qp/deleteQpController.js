@@ -1,4 +1,4 @@
-import { deleteQp } from "../../services/qp/deleteQpService.js";
+import {deleteQp} from "../../services/qp/deleteQp";
 
 /**
  * Controller for deleting a question paper.

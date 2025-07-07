@@ -1,19 +1,12 @@
-// src/services/auth/logoutService.js
+import { AUTH_PATHS } from "../../mapper/auth.paths.js";
+import { fetchWithAuth } from "../../utils/fetchWithAuth.js";
 
-import { AUTH_PATHS } from "../../mapper/auth.paths";
-import { fetchWithAuth } from "../../utils/fetchWithAuth";
-
-
-
-/**
- * Logs out the user by calling the API and returning logout status.
- */
 export const logoutService = async () => {
   try {
     const response = await fetchWithAuth(AUTH_PATHS.LOGOUT, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json" // Let fetchWithAuth add Authorization
+        "Content-Type": "application/json" // ONLY this
       }
     });
 

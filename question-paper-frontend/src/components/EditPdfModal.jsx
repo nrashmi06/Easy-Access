@@ -1,12 +1,32 @@
 import { useState, useEffect } from "react";
+import { updateQpController } from "../controllers/qp/updateQpController";
+import { useSelector } from "react-redux";
 
-export default function EditPdfModal({ isOpen, onClose, onSubmit, initialData }) {
-  const [form, setForm] = useState(initialData);
+export default function EditPdfModal({ isOpen, onClose, initialData }) {
+  const [form, setForm] = useState({
+    title: "",
+    year: "",
+    type: "",
+    subjectName: "",
+    pdfUrl: "",
+    _id: "",
+  });
   const [selectedFile, setSelectedFile] = useState(null);
+  const token = useSelector((state) => state.auth.accessToken);
 
+  // Load initial data when modal opens
   useEffect(() => {
-    setForm(initialData);
-    setSelectedFile(null);
+    if (initialData) {
+      setForm({
+        _id: initialData._id || "",
+        title: initialData.title || "",
+        year: initialData.year || "",
+        type: initialData.type || "",
+        subjectName: initialData.subjectName || "",
+        pdfUrl: initialData.pdfUrl || "",
+      });
+      setSelectedFile(null);
+    }
   }, [initialData]);
 
   const handleChange = (e) => {
@@ -24,19 +44,33 @@ export default function EditPdfModal({ isOpen, onClose, onSubmit, initialData })
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    let updatedData = { ...form };
+  if (!form._id) {
+    alert("Missing PDF ID.");
+    return;
+  }
 
-    if (selectedFile) {
-      const fakeUploadedUrl = URL.createObjectURL(selectedFile); // Temporary URL for demonstration
-      updatedData.pdfUrl = fakeUploadedUrl;
-    }
+  const formData = new FormData();
+  formData.append("title", form.title);
+  formData.append("year", form.year);
+  formData.append("type", form.type);
+  formData.append("subjectName", form.subjectName);
 
-    onSubmit(updatedData);
+  if (selectedFile) {
+    formData.append("pdf", selectedFile);
+  }
+
+  try {
+    await updateQpController(form._id, formData, token); // ✅ Pass ID separately
     onClose();
-  };
+  } catch (error) {
+    console.error("Update failed:", error);
+    alert("Failed to update PDF.");
+  }
+};
+
 
   if (!isOpen) return null;
 
@@ -45,7 +79,6 @@ export default function EditPdfModal({ isOpen, onClose, onSubmit, initialData })
       <div className="bg-neutral rounded-xl shadow-lg w-full max-w-md p-6">
         <h2 className="text-xl font-bold text-yellow-600 mb-4">Edit PDF</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-
           {["title", "year", "type", "subjectName"].map((field) => (
             <div key={field} className="form-control w-full">
               <label className="label">
@@ -66,13 +99,15 @@ export default function EditPdfModal({ isOpen, onClose, onSubmit, initialData })
             <label className="label">
               <span className="label-text">PDF File</span>
             </label>
-
-            {/* Display selected file name or existing URL as pseudo selected */}
             <div className="input input-bordered flex items-center gap-2 w-full">
               <span className="truncate flex-1 text-sm text-gray-500">
-                {selectedFile ? selectedFile.name : form.pdfUrl.split("/").pop()}
+                {selectedFile
+                  ? selectedFile.name
+                  : form.pdfUrl
+                  ? form.pdfUrl.split("/").pop()
+                  : "No file selected"}
               </span>
-              <label className="btn btn-sm btn-outline ">
+              <label className="btn btn-sm btn-outline">
                 Choose File
                 <input
                   type="file"
@@ -85,17 +120,10 @@ export default function EditPdfModal({ isOpen, onClose, onSubmit, initialData })
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="btn btn-ghost"
-            >
+            <button type="button" onClick={onClose} className="btn btn-ghost">
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-warning text-white"
-            >
+            <button type="submit" className="btn btn-warning text-white">
               Save Changes
             </button>
           </div>

@@ -1,10 +1,10 @@
-// src/utils/fetchWithAuth.js
 import { store } from "../store/store";
+import { setAccessTokenOnly } from "../store/authSlice";
 
 let isRefreshing = false;
 let failedQueue = [];
 
-const processQueue = (error, token = null) => {
+const processQueue = (error, token) => {
   failedQueue.forEach(promise => {
     if (error) {
       promise.reject(error);
@@ -16,21 +16,23 @@ const processQueue = (error, token = null) => {
 };
 
 export async function fetchWithAuth(url, options = {}) {
-  const token = store.getState().auth.accessToken ;
-  console.log (" accessToken in fetchWithAuth: ", token);
+  const token = store.getState().auth.accessToken;
+  const isFormData = options.body instanceof FormData;
+
   const headers = {
     ...(options.headers || {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    "Content-Type": options.headers?.["Content-Type"] || "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
   };
+
+  console.log("accessToken in fetchWithAuth:", token);
 
   let response = await fetch(url, {
     ...options,
     headers,
   });
 
-  if (response.status === 401 || response.status === 403 || response.status === 419) {
-    // Token might be expired, try refresh
+  if ([400, 401, 403].includes(response.status)) {
     return await handle401(url, options);
   }
 
@@ -41,18 +43,17 @@ async function handle401(originalUrl, originalOptions) {
   if (isRefreshing) {
     return new Promise((resolve, reject) => {
       failedQueue.push({ resolve, reject });
-    })
-      .then(token => {
-        const retryHeaders = {
-          ...originalOptions.headers,
-          Authorization: `Bearer ${token}`,
-        };
+    }).then(token => {
+      const retryHeaders = {
+        ...originalOptions.headers,
+        Authorization: `Bearer ${token}`,
+      };
 
-        return fetch(originalUrl, {
-          ...originalOptions,
-          headers: retryHeaders,
-        });
+      return fetch(originalUrl, {
+        ...originalOptions,
+        headers: retryHeaders,
       });
+    });
   }
 
   isRefreshing = true;
@@ -68,10 +69,11 @@ async function handle401(originalUrl, originalOptions) {
 
     if (!refreshResponse.ok) throw new Error("Refresh failed");
 
-    const data = await refreshResponse.json();
-    const newAccessToken = data.accessToken;
+    const response = await refreshResponse.json();
+    const newAccessToken = response.data.accessToken;
 
-    localStorage.setItem("accessToken", newAccessToken);
+    console.log("New access token received:", newAccessToken);
+    store.dispatch(setAccessTokenOnly(newAccessToken));
     processQueue(null, newAccessToken);
 
     const retryHeaders = {

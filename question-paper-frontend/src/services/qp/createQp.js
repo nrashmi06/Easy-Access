@@ -1,23 +1,20 @@
 import { QP_PATHS } from "../../mapper/qp.paths";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
 
 /**
  * Creates a new question paper.
  * @param {import("../../types/qp").QuestionPaperFormData} formData - The form data for the question paper.
- * @param {string} accessToken - The access token for authentication.   
- * * @returns {Promise<import("../../types/qp").QuestionPaperResponse>} - The response from the API.
- */ 
-
+ * @param {string} accessToken - The access token for authentication.
+ * @returns {Promise<import("../../types/qp").QuestionPaperResponse>} - The response from the API.
+ */
 export const createQp = async (formData, accessToken) => {
   const path = QP_PATHS.ADD;
 
   try {
-    const response = await fetch(path, {
+    const response = await fetchWithAuth(path, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
       body: formData,
-    });
+    }, accessToken);
 
     const result = await response.json();
 

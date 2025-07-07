@@ -6,6 +6,6 @@ import { updateQp } from "../../services/qp/updateQp";
  * @param {string} accessToken - The access token for authentication.
  * @returns {Promise<import("../../types/qp").QuestionPaperResponse>} - The response from the API.
  */
-export const updateQpController = async (formData, accessToken) => {
-  return updateQp(formData, accessToken);
+export const updateQpController = async (id, formData, accessToken) => {
+  return updateQp(id, formData, accessToken);
 };

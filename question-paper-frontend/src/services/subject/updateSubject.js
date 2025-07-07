@@ -1,23 +1,27 @@
 import { SUBJECT_PATHS } from "../../mapper/subject.paths";
-/**
- * Creates a new subject by sending a POST request to the API.
- * * @param {string} accessToken - The access token for authentication.
- * @param {import('../../types/subject.js').UpdateSubjectData} data - The subject data to create.
- * * @returns {Promise<import('../types/subject.js').ApiResponse>}
- */
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
 
-export const updateSubject = async (data , accessToken) => {
+/**
+ * Updates a subject by sending a PUT request to the API.
+ * @param {import('../../types/subject.js').UpdateSubjectData} data - The subject data to update.
+ * @param {string} accessToken - The access token for authentication.
+ * @returns {Promise<import('../../types/subject.js').ApiResponse>}
+ */
+export const updateSubject = async (data, accessToken) => {
   const path = SUBJECT_PATHS.UPDATE(data._id);
 
   try {
-    const response = await fetch(path, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
+    const response = await fetchWithAuth(
+      path,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    });
+      accessToken
+    );
 
     const result = await response.json();
 

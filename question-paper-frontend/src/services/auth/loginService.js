@@ -13,8 +13,10 @@ export const loginUserService = async (data) => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+       
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(data), 
+      credentials: "include",
     });
 
     const result = await response.json();

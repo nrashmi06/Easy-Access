@@ -1,24 +1,28 @@
 import { SUBJECT_PATHS } from "../../mapper/subject.paths";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
+
 /**
  * Deletes a subject by sending a DELETE request to the API.
- * * @param {string} accessToken - The access token for authentication.
  * @param {import('../../types/subject.js').DeleteSubjectData} data - The subject data to delete.
- * * @returns {Promise<import('../types/subject.js').ApiResponse>}
+ * @param {string} accessToken - The access token for authentication.
+ * @returns {Promise<import('../../types/subject.js').ApiResponse>}
  */
-
 export const deleteSubject = async (data, accessToken) => {
   const path = SUBJECT_PATHS.DELETE;
 
   try {
-    const response = await fetch(path, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
+    const response = await fetchWithAuth(
+      path,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
       },
-      body: JSON.stringify(data),
-    });
+      accessToken
+    );
 
     const result = await response.json();
 

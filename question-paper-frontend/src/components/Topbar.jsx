@@ -11,7 +11,6 @@ export default function Topbar({ drawerOpen, toggleDrawer }) {
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState("subject"); // 🧠 Toggle between "subject" and "questionPaper"
   const profilePic = useSelector((state) => state.auth.profileImage);
-  const accessToken = useSelector((state) => state.auth.accessToken);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -31,7 +30,7 @@ export default function Topbar({ drawerOpen, toggleDrawer }) {
   };
 
   const handleLogout = async () => {
-    const response = await logoutController(accessToken);
+    const response = await logoutController();
     if (!response.error) {
       clearStore(dispatch);
       navigate("/login");

@@ -1,23 +1,28 @@
 import { SUBJECT_PATHS } from "../../mapper/subject.paths";
+import { fetchWithAuth } from "../../utils/fetchWithAuth";
+
 /**
  * Creates a new subject by sending a POST request to the API.
- * * @param {string} accessToken - The access token for authentication.
  * @param {import('../../types/subject.js').CreateSubjectData} data - The subject data to create.
- *  @returns {Promise<import('../types/subject.js').ApiResponse>}
+ * @param {string} accessToken - The access token for authentication.
+ * @returns {Promise<import('../../types/subject.js').ApiResponse>}
  */
-export const createSubject = async (data , accessToken) => {
+export const createSubject = async (data, accessToken) => {
   const path = SUBJECT_PATHS.CREATE;
 
   try {
-    const response = await fetch(path, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-        Accept: "application/json",
+    const response = await fetchWithAuth(
+      path,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
       },
-      body: JSON.stringify(data),
-    });
+      accessToken
+    );
 
     const result = await response.json();
 

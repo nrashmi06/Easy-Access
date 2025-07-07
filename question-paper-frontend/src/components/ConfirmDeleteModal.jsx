@@ -1,5 +1,20 @@
-export default function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }) {
+import { useSelector } from "react-redux";
+import { deleteQpController } from "../controllers/qp/deleteQpController";
+
+export default function ConfirmDeleteModal({ isOpen, onCancel, onConfirm , id }) {
+  const token = useSelector((state) => state.auth.accessToken);
   if (!isOpen) return null;
+  
+
+  const handleSubmit = async () => {
+    try {
+      await deleteQpController({id}, token);
+      onConfirm();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      alert("Failed to delete PDF.");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
@@ -12,7 +27,7 @@ export default function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }) {
           <button onClick={onCancel} className="btn btn-ghost">
             Cancel
           </button>
-          <button onClick={onConfirm} className="btn btn-error text-white">
+          <button onClick={() => { handleSubmit(); onConfirm(); }} className="btn btn-error text-white">
             Delete
           </button>
         </div>

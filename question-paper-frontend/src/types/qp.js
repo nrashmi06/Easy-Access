@@ -28,7 +28,7 @@
  * Used when sending multipart/form-data.
  * @typedef {Object} QuestionPaperFormData
  * @property {string} title - Title of the paper.
- * @property {number} year - Year of the paper.
+ * @property {string} year - Year of the paper.
  * @property {string} type - Type (e.g., MSE, ESE).
  * @property {string} subjectName - Subject name.
  * @property {File} pdf - PDF file of the paper.
