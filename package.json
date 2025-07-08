@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "lighthouse": "^12.7.1",
+    "puppeteer": "^24.12.0"
+  },
+  "scripts": {
+    "lighthouse": "node --trace-warnings runLighthouse.mjs"
+  }
+}

@@ -1,46 +1,47 @@
-import { useMemo } from "react";
-import useTheme from "../hooks/useTheme";
-
 export default function HeroSection() {
-  const [theme] = useTheme();
-  const isDark = theme === "dark";
-
-  // Dynamically compute background gradient
-  const backgroundStyle = useMemo(() => {
-    return {
-      background: isDark
-        ? "linear-gradient(90deg, rgb(36, 126, 131) 0%, rgb(2, 62, 30) 50%, rgb(187, 189, 144) 100%)"
-        : "linear-gradient(90deg, rgba(191, 232, 255, 1) 0%, rgba(171, 217, 190, 1) 50%, rgba(255, 248, 168, 1) 100%)",
-    };
-  }, [isDark]);
-
   return (
-    <>
+    <main>
       {/* Hero Section */}
-      <div className="hero min-h-[80vh] relative transition-colors duration-500" id="home" style={backgroundStyle}>
-                <div className="hero-content text-center container mx-auto relative z-10">
-          <div className={`max-w-xl mx-auto ${isDark ? "text-white" : "text-black"}`}>
-            <h1 className="text-5xl font-bold">Access Question Papers Easily</h1>
-            <p className="py-6">
-              Your centralized platform for previous years' question papers, organized and easy to find.
+      <section
+        className="hero min-h-[80vh] flex items-center justify-center relative 
+                   bg-gradient-to-r from-sky-200 via-green-200 to-yellow-200 
+                   dark:from-cyan-800 dark:via-green-900 dark:to-lime-200"
+        id="home"
+        aria-label="Hero section"
+      >
+        <div className="container text-center px-4 z-10">
+          <div className="max-w-2xl mx-auto text-black dark:text-white">
+            <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight mb-4">
+              Access Question Papers Easily
+            </h1>
+            <p className="text-lg sm:text-xl mb-6 text-gray-700 dark:text-gray-300">
+              Your centralized platform for previous years' question papers — organized and easy to find.
             </p>
-            <a href="#about" className="btn btn-primary scroll-smooth">
+            <a
+              href="#about"
+              className="btn btn-primary mt-4"
+              aria-label="Scroll to About section"
+            >
               Get Started
             </a>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* About Section */}
-      <section id="about" className="bg-base-100 py-20 px-4">
+      <section
+        id="about"
+        className="bg-base-100 py-20 px-4"
+        aria-label="About Easy Access"
+      >
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold mb-6 text-primary">About Easy Access</h2>
-          <p className="text-base-content text-lg leading-relaxed">
+          <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
             Easy Access helps students find and review previous years' question papers effortlessly.
             Organized by subjects, departments, and years, we empower you to prepare smarter and faster.
           </p>
         </div>
       </section>
-    </>
+    </main>
   );
 }

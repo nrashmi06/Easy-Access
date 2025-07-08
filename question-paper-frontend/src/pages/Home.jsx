@@ -1,9 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import HeroSection from "../components/HeroSection";
-import Features from "../components/Features";
-import Footer from "../components/Footer";
+import LoadingSpinner from "../components/LoadingSpinner"; // ✅ Import it
+
+const Features = lazy(() => import("../components/Features"));
+const Footer = lazy(() => import("../components/Footer"));
 
 export default function Home() {
   const location = useLocation();
@@ -25,14 +27,19 @@ export default function Home() {
 
       <main className="flex-grow">
         <HeroSection />
-        <section id="about">
-          <Features />
-        </section>
+
+        <Suspense fallback={<LoadingSpinner />}>
+          <section id="about">
+            <Features />
+          </section>
+        </Suspense>
       </main>
 
-      <section id="contact">
-        <Footer />
-      </section>
+      <Suspense fallback={<LoadingSpinner />}>
+        <section id="contact">
+          <Footer />
+        </section>
+      </Suspense>
     </div>
   );
 }
