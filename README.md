@@ -101,11 +101,9 @@ This structure follows industry best practices, making the codebase easier to na
 
 ## Usage
 - Access the frontend at [http://localhost:5173](http://localhost:5173) (default Vite port).
-- The backend runs on [http://localhost:3000](http://localhost:3000) by default.
+- The backend runs on [http://localhost:3000](http://localhost:5000) by default.
 - Register, log in, and start managing subjects and question papers.
 
 ## Contributing
 Contributions are welcome! Please open issues or submit pull requests for improvements or bug fixes.
 
-## License
-This project is licensed under the MIT License.
