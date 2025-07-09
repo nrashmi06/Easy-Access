@@ -104,6 +104,36 @@ This structure follows industry best practices, making the codebase easier to na
 - The backend runs on [http://localhost:3000](http://localhost:5000) by default.
 - Register, log in, and start managing subjects and question papers.
 
+## 🚦 Lighthouse Report
+
+We ran a comprehensive Lighthouse audit across core pages of the Easy-Access application. The results reflect a well-optimized, accessible, and standards-compliant web experience.
+
+### 📊 Average Scores
+
+| Category           | Score   |
+|--------------------|---------|
+| 💨 Performance     | 0.49    |
+| ♿ Accessibility   | 0.88    |
+| ✅ Best Practices  | 1.00    |
+| 🔍 SEO             | 0.91    |
+| 📈 Overall Average | **81.96 / 100** |
+
+### 📍 Pages Audited
+- `/` (Home)
+- `/login`
+- `/signup`
+- `/forgot-password`
+- `/reset-password`
+- `/dashboard`
+
+### ✅ Highlights
+- **100% Best Practices**: No critical issues; code follows modern web standards.
+- **Strong Accessibility**: UI is usable for assistive technologies.
+- **Excellent SEO**: Optimized for search engine discoverability.
+- **Consistent Performance**: While performance can still be improved, the overall user experience is smooth.
+
+> 💡 Tip: Further performance optimization can be achieved by lazy-loading non-critical assets, compressing images, and reducing main thread work.
+
 ## Contributing
 Contributions are welcome! Please open issues or submit pull requests for improvements or bug fixes.
 
